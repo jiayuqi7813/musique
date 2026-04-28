@@ -6,4 +6,9 @@ plugins {
 allprojects {
     group = "com.tulskiy.musique"
     version = "0.4.0-SNAPSHOT"
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
 }

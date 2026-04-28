@@ -57,10 +57,13 @@ class AudioPlayer {
         val track = item.toTrack()
         val location = track.trackData.location
         if (location != null && !track.trackData.isStream) {
-            val reader = TrackIO.getAudioFileReader(track.trackData.getFile().name)
-            reader?.read(track)
+            val file = track.trackData.getFile()
+            val reader = TrackIO.getAudioFileReader(file.name)
+            val populated = reader?.read(file)
+            engine.open(populated ?: track)
+        } else {
+            engine.open(track)
         }
-        engine.open(track)
     }
 
     /** Begin or resume playback. */

@@ -18,3 +18,4 @@ build/
 gradlew
 gradlew.bat
 gradle/wrapper/gradle-wrapper.jar
+.kotlin/
