@@ -34,7 +34,7 @@ import junit.framework.Assert;
 import org.jaudiotagger.tag.FieldKey;
 import org.junit.Test;
 
-import com.tulskiy.musique.gui.model.FieldValues;
+import com.tulskiy.musique.playlist.FieldValues;
 import com.tulskiy.musique.playlist.Track;
 import com.tulskiy.musique.playlist.TrackData;
 import com.tulskiy.musique.util.Util;

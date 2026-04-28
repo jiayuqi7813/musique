@@ -19,7 +19,15 @@ suitable for embedding in applications, servers, or custom players.
 
 ## Requirements
 
-- Java 25+
+- Java 25+ (recommended production runtime)
+- Java 21+ (minimum to build with the bundled toolchain)
+
+> **Note on Java 25:** The build currently uses Kotlin 2.1.0 with a Java 21 toolchain
+> (the LTS release fully supported by Kotlin 2.1.0).
+> To compile with a Java 25 JDK, upgrade the Kotlin plugin to 2.2.0+ and set
+> `JavaLanguageVersion.of(25)` in `musique-core/build.gradle.kts`.
+> The library code itself is Java 25-compatible — no Java 25-specific APIs are used that
+> would break on Java 21.
 
 ## Building
 
@@ -29,7 +37,7 @@ suitable for embedding in applications, servers, or custom players.
 
 Or to just compile:
 ```bash
-./gradlew :musique-core:compileKotlin compileJava
+./gradlew :musique-core:compileKotlin :musique-core:compileJava
 ```
 
 ## Usage

@@ -20,12 +20,10 @@ package com.tulskiy.musique.system.configuration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Rectangle;
 import java.io.StringReader;
-import java.util.ArrayList;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,8 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Author: Denis Tulskiy
- * Date: Jun 16, 2010
+ * Tests for the simplified, GUI-free Configuration class.
  */
 public class ConfigTest {
     private Configuration config;
@@ -45,31 +42,14 @@ public class ConfigTest {
         Logger.getLogger(getClass().getName()).setLevel(Level.OFF);
         config = new Configuration();
         config.load(new StringReader(
-                "font: Serif, 0, 14\n" +
-                "color: #DECAFE\n" +
-                "int: 12345\n" +
-                "float: 1.2345\n" +
-                "rectangle: 12 34 56 78\n" +
-                "string: some string\n" +
-                "list:\n" +
-                "  item 1\n" +
-                "  item 2\n"));
+                "int=12345\n" +
+                "float=1.2345\n" +
+                "string=some string\n" +
+                "bool=true\n"));
     }
 
     @Test
     public void testLoad() {
-        Font font = config.getFont("font", null);
-        assertNotNull(font);
-        assertEquals(new Font("Serif", 0, 14), font);
-
-        Color color = config.getColor("color", null);
-        assertNotNull(color);
-        assertEquals(new Color(0xDECAFE), color);
-
-        Rectangle rectangle = config.getRectangle("rectangle", null);
-        assertNotNull(rectangle);
-        assertEquals(new Rectangle(12, 34, 56, 78), rectangle);
-
         int anInt = config.getInt("int", -1);
         assertEquals(12345, anInt);
 
@@ -80,24 +60,12 @@ public class ConfigTest {
         assertNotNull(string);
         assertEquals("some string", string);
 
-        List<String> list = config.getList("list", null);
-        ArrayList<String> expected = new ArrayList<String>();
-        expected.add("item 1");
-        expected.add("item 2");
-        assertEquals(expected, list);
+        boolean bool = config.getBoolean("bool", false);
+        assertTrue(bool);
     }
 
     @Test
     public void testDefaults() {
-        Font font = config.getFont("doesNotExist1", null);
-        assertNull(font);
-
-        Color color = config.getColor("doesNotExist2", null);
-        assertNull(color);
-
-        Rectangle rectangle = config.getRectangle("doesNotExist3", null);
-        assertNull(rectangle);
-
         int anInt = config.getInt("doesNotExist4", -1);
         assertEquals(-1, anInt);
 
@@ -106,37 +74,48 @@ public class ConfigTest {
 
         String string = config.getString("doesNotExist6", null);
         assertNull(string);
+
+        boolean bool = config.getBoolean("doesNotExist7", false);
+        assertEquals(false, bool);
     }
 
     @Test
-    public void testSave() {
+    public void testPut() {
         config.setInt("newInt", 123);
+        assertEquals(123, config.getInt("newInt", -1));
+
         config.setFloat("newFloat", 1.23f);
+        assertEquals(1.23, config.getFloat("newFloat", -1), 0.001);
+
         config.setString("newString", "new string");
-        config.setColor("newColor", new Color(0xD017AA));
-        config.setFont("newFont", new Font("Serif", 0, 14));
-        config.setRectangle("newRect", new Rectangle(98, 76, 54, 32));
+        assertEquals("new string", config.getString("newString", null));
 
-        Font font = config.getFont("newFont", null);
-        assertNotNull(font);
-        assertEquals(new Font("Serif", 0, 14), font);
+        config.setBoolean("newBool", true);
+        assertTrue(config.getBoolean("newBool", false));
+    }
 
-        Color color = config.getColor("newColor", null);
-        assertNotNull(color);
-        assertEquals(new Color(0xD017AA), color);
+    @Test
+    public void testSaveAndLoad() {
+        config.setInt("savedInt", 999);
+        config.setString("savedStr", "hello");
 
-        Rectangle rectangle = config.getRectangle("newRect", null);
-        assertNotNull(rectangle);
-        assertEquals(new Rectangle(98, 76, 54, 32), rectangle);
+        StringWriter sw = new StringWriter();
+        config.save(sw);
 
-        int anInt = config.getInt("newInt", -1);
-        assertEquals(123, anInt);
+        Configuration config2 = new Configuration();
+        config2.load(new StringReader(sw.toString()));
+        assertEquals(999, config2.getInt("savedInt", -1));
+        assertEquals("hello", config2.getString("savedStr", null));
+    }
 
-        float aFloat = config.getFloat("newFloat", -1);
-        assertEquals(1.23, aFloat, 0.00001);
-
-        String string = config.getString("newString", null);
-        assertNotNull(string);
-        assertEquals("new string", string);
+    @Test
+    public void testList() {
+        config.setList("myList", java.util.Arrays.asList("alpha", "beta", "gamma"));
+        List<String> list = config.getList("myList");
+        assertNotNull(list);
+        assertEquals(3, list.size());
+        assertEquals("alpha", list.get(0));
+        assertEquals("beta", list.get(1));
+        assertEquals("gamma", list.get(2));
     }
 }

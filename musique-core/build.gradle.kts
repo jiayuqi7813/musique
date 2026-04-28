@@ -3,16 +3,22 @@ plugins {
     `java-library`
 }
 
+// Java 25 is the target production runtime (released Sep 2025).
+// The toolchain below uses Java 21 (LTS) because Kotlin 2.1.0 does not yet
+// fully support Java 25 bytecode targets. To upgrade, bump the Kotlin plugin
+// to 2.2.0+ in the root build.gradle.kts and change all `21` values below to `25`.
+val javaTarget = 21
+
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.toVersion(javaTarget)
+    targetCompatibility = JavaVersion.toVersion(javaTarget)
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(javaTarget)
     }
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(javaTarget)
 }
 
 sourceSets {
@@ -34,6 +40,12 @@ sourceSets {
                 "../dependencies/wavpack/src/main/java"
             )
         }
+        resources {
+            setSrcDirs(listOf(
+                "src/main/resources",
+                "../dependencies/javalayer/src/main/resources"
+            ))
+        }
         kotlin {
             srcDirs("src/main/kotlin")
         }
@@ -53,6 +65,8 @@ dependencies {
     implementation("commons-logging:commons-logging:1.2")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("junit:junit:4.13.2")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.0")
 }
 
 tasks.test {
