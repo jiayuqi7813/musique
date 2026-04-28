@@ -132,7 +132,7 @@ public class Methods {
             return null;
         }
 
-    Object tagFieldValues = args.get(0).eval(track);
+        Object tagFieldValues = args.get(0).eval(track);
         String separator = (String) args.get(1).eval(track);
         
         return Util.formatFieldValues(tagFieldValues, separator);
