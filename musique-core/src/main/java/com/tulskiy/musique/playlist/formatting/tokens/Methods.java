@@ -19,12 +19,7 @@ package com.tulskiy.musique.playlist.formatting.tokens;
 
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
-
-import com.tulskiy.musique.audio.player.Player;
-import com.tulskiy.musique.images.Images;
 import com.tulskiy.musique.playlist.Track;
-import com.tulskiy.musique.system.Application;
 import com.tulskiy.musique.util.Util;
 
 /**
@@ -33,9 +28,6 @@ import com.tulskiy.musique.util.Util;
  */
 @SuppressWarnings({"UnusedDeclaration"})
 public class Methods {
-    private static ImageIcon playingIcon = Images.loadIcon("play.png");
-    private static ImageIcon pausedIcon = Images.loadIcon("pause.png");
-    private Application app = Application.getInstance();
 
     public String if3(Track track, ArrayList<Expression> args) {
         for (Expression t : args) {
@@ -125,36 +117,22 @@ public class Methods {
             return "";
     }
 
+    /** Not available in headless library mode; always returns null. */
     public Object isPlaying(Track track, ArrayList<Expression> args) {
-        if (track != null) {
-            if (app.getPlayer().getTrack() == track) {
-                if (app.getPlayer().isPaused())
-                    return pausedIcon;
-                if (app.getPlayer().isPlaying())
-                    return playingIcon;
-            } else if (track.getQueuePosition() != -1) {
-                return track.getQueuePosition();
-            }
-        }
-
         return null;
     }
 
+    /** Not available in headless library mode; always returns null. */
     public String playingTime(Track track, ArrayList<Expression> args) {
-        Player player = app.getPlayer();
-        if (player.isPlaying()) {
-            return Util.samplesToTime(player.getCurrentSample(), player.getTrack().getTrackData().getSampleRate(), 0);
-        } else {
-            return null;
-        }
+        return null;
     }
-    
+
     public String combine(Track track, ArrayList<Expression> args) {
         if (args.size() != 2) {
             return null;
         }
 
-    	Object tagFieldValues = args.get(0).eval(track);
+    Object tagFieldValues = args.get(0).eval(track);
         String separator = (String) args.get(1).eval(track);
         
         return Util.formatFieldValues(tagFieldValues, separator);

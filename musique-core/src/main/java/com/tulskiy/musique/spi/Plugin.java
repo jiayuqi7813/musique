@@ -17,26 +17,15 @@
 
 package com.tulskiy.musique.spi;
 
-import com.tulskiy.musique.audio.player.Player;
-import com.tulskiy.musique.gui.menu.LibraryMenu;
-import com.tulskiy.musique.gui.menu.Menu;
-import com.tulskiy.musique.gui.menu.TracksMenu;
-import com.tulskiy.musique.playlist.PlaylistManager;
-import com.tulskiy.musique.system.Application;
-import com.tulskiy.musique.system.configuration.Configuration;
-
-import java.awt.*;
 import java.util.logging.Logger;
 
 /**
+ * Base class for musique-core plugins.
+ *
  * Author: Denis Tulskiy
  * Date: 2/27/11
  */
 public abstract class Plugin {
-    protected static final Application application = Application.getInstance();
-    protected static final Player player = application.getPlayer();
-    protected static final Configuration config = application.getConfiguration();
-    protected static final PlaylistManager playlistManager = application.getPlaylistManager();
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
     public abstract boolean init();
@@ -45,21 +34,9 @@ public abstract class Plugin {
 
     public abstract Description getDescription();
 
-    public void registerMenu(MenuType type, Menu.MenuCallback menu) {
-        if (menu != null)
-            switch (type) {
-                case TRACKS:
-                    TracksMenu.addMenu(menu);
-                    break;
-                case LIBRARY:
-                    LibraryMenu.addMenu(menu);
-            }
-    }
-
     public enum MenuType {
         TRACKS, LIBRARY, MAIN
     }
-
 
     public class Description {
         public String name;
@@ -79,7 +56,6 @@ public abstract class Plugin {
     }
 
     public abstract boolean isConfigurable();
-    public void configure(Window parent) {}
 
     @Override
     public String toString() {

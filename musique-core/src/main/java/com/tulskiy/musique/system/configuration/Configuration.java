@@ -17,286 +17,98 @@
 
 package com.tulskiy.musique.system.configuration;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Logger;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
-
-import com.sun.org.apache.xml.internal.serialize.OutputFormat;
-import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
-import com.tulskiy.musique.plugins.hotkeys.HotkeyConfiguration;
-import com.tulskiy.musique.system.Application;
-
 /**
- * Author: Denis Tulskiy
- * Date: Jun 15, 2010
+ * Simple key-value configuration store for musique-core library.
+ * All GUI-specific (Color, Font, Rectangle) methods have been removed.
  */
-public class Configuration extends XMLConfiguration {
-    
+public class Configuration {
+
     public static final int VERSION = 1;
-    
     public static final String PROPERTY_INFO_VERSION = "info.version";
 
-    private Logger logger = Logger.getLogger(getClass().getName());
-    // TODO move to ConfigurationListener given by Configuration Commons
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final Logger logger = Logger.getLogger(getClass().getName());
+    private final Map<String, Object> map = new LinkedHashMap<>();
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
-    @Deprecated
-    private Map<String, Object> map = new TreeMap<String, Object>();
-    
-    {
-    	// Disable delimiter mechanism completely for this instance
-    	//
-    	// https://issues.apache.org/jira/browse/CONFIGURATION-268
-    	// We might add a note in the javadoc suggesting that setDelimiterParsingDisabled(true)
-    	// is not recommended if list properties are used in attributes,
-    	// and that changing the list delimiter to an untypical character is preferred.
-    	//
-    	// http://commons.apache.org/configuration/userguide/howto_xml.html
-    	// Using the static setDefaultDelimiter() method of AbstractConfiguration
-    	// you can globally define a different delimiter character
-    	// or - by setting the delimiter to 0 - disabling this mechanism completely.
-		setListDelimiter((char) 0);
-	}
-
-    @Override
     public void load(Reader reader) {
         logger.fine("Loading configuration");
-        
-        try {
-            super.load(reader);
-        } catch (ConfigurationException e) {
-            // error log disabled as we're gonna try to load deprecated configuration file of v0.2
-//            logger.severe("Failed to load configuration: " + e.getMessage());
-            convertOldConfiguration(reader);
-        }
-
-        int version = getInt(PROPERTY_INFO_VERSION, -1);
-        if (version > VERSION) {
-            logger.warning(String.format("Configuration of newer v%d found, but v%d is latest supported." +
-                    " Backward compatibility is not guaranteed.", version, VERSION));
-        }
-        else if (version == -1) {
-            logger.warning("Configuration of unknown version is loaded." +
-                    " Backward compatibility is not guaranteed.");
-        }
-        else {
-            logger.config(String.format("Configuration of v%d is loaded.", version));
+        try (BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+                int idx = line.indexOf('=');
+                if (idx > 0) {
+                    String key = line.substring(0, idx).trim();
+                    String value = line.substring(idx + 1).trim();
+                    map.put(key, value);
+                }
+            }
+        } catch (IOException e) {
+            logger.warning("Could not load configuration: " + e.getMessage());
         }
     }
 
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    private void convertOldConfiguration(Reader reader) {
-        // reader has been used, so try to reposition read point to start
-        try {
-			reader.reset();
-		} catch (IOException e) {
-			// just ignore, will try to read from where it is
-		}
-
-        loadFromCustomFormat(reader);
-
-        setFile(new File(Application.getInstance().CONFIG_HOME, "config"));
-        addProperty(PROPERTY_INFO_VERSION, VERSION);
-
-        Iterator<Entry<String, Object>> entries = map.entrySet().iterator();
-        while (entries.hasNext()) {
-            Entry<String, Object> entry = entries.next();
-            String key = /*"musique." +*/ entry.getKey();
-            if (entry.getValue() instanceof List) {
-                List values = (List) entry.getValue();
-                if (key.equals("albumart.stubs")) {
-                    AlbumArtConfiguration.setStubs(values);
-                }
-                else if (key.equals("fileOperations.patterns")) {
-                    FileOperationsConfiguration.setPatterns(values);
-                }
-                else if (key.equals("hotkeys.list")) {
-                    HotkeyConfiguration.setHotkeysRaw(values);
-                }
-                else if (key.equals("library.folders")) {
-                    LibraryConfiguration.setFolders(values);
-                }
-                else if (key.equals("playlist.columns")) {
-                    PlaylistConfiguration.setColumnsRaw(values);
-                }
-                else if (key.equals("playlist.tabs.bounds")) {
-                    PlaylistConfiguration.setTabBoundsRaw(values);
-                }
-                else if (key.equals("playlists")) {
-                    PlaylistConfiguration.setPlaylistsRaw(values);
-                }
-                else {
-                    for (Object value : values) {
-                        addProperty(key, value);
-                    }
-                }
-            }
-            else {
-                if (key.equals("wavpack.encoder.hybrid.wvc")) {
-                    addProperty("encoder.wavpack.hybrid.wvc.enabled", entry.getValue());
-                }
-                else if (key.equals("playlist.activePlaylist")) {
-                    addProperty("playlists.activePlaylist", entry.getValue());
-                }
-                else if (key.equals("playlist.cursorFollowsPlayback")) {
-                    addProperty("playlists.cursorFollowsPlayback", entry.getValue());
-                }
-                else if (key.equals("playlist.groupBy")) {
-                    addProperty("playlists.groupBy", entry.getValue());
-                }
-                else if (key.equals("playlist.lastDir")) {
-                    addProperty("playlists.lastDir", entry.getValue());
-                }
-                else if (key.equals("playlist.playbackFollowsCursor")) {
-                    addProperty("playlists.playbackFollowsCursor", entry.getValue());
-                }
-                else if (key.equals("playlist.tabs.hideSingle")) {
-                    addProperty("playlists.tabs.hideSingle", entry.getValue());
-                }
-                else if (key.startsWith("ape.encoder")) {
-                    addProperty(key.replace("ape.encoder", "encoder.ape"), entry.getValue());
-                }
-                else if (key.startsWith("vorbis.encoder")) {
-                    addProperty(key.replace("vorbis.encoder", "encoder.vorbis"), entry.getValue());
-                }
-                else if (key.startsWith("wavpack.encoder")) {
-                    addProperty(key.replace("wavpack.encoder", "encoder.wavpack"), entry.getValue());
-                }
-                else {
-                    addProperty(key, entry.getValue());
-                }
-            }
-        }
-        
-        map.clear();
-
-        try {
-            save();
-        } catch (ConfigurationException e) {
-            logger.severe("Failed to save converted configuration: " + e.getMessage());
-        }
-    }
-
-    @Override
     public void save(Writer writer) {
         logger.fine("Saving configuration");
-        
-        try {
-            OutputFormat format = new OutputFormat(createDocument());
-            format.setLineWidth(65);
-            format.setIndenting(true);
-            format.setIndent(2);
-            XMLSerializer serializer = new XMLSerializer(writer, format);
-            serializer.serialize(getDocument());
-            writer.close();
-        }
-        catch (ConfigurationException ce) {
-            logger.severe("Failed to save configuration: " + ce.getMessage());
-        }
-        catch (IOException ioe) {
-            logger.severe("Failed to save configuration: " + ioe.getMessage());
-        }
-    }
-
-    // TODO remove when 0.3 released
-    @Deprecated
-    public void loadFromCustomFormat(Reader reader) {
-        try {
-            BufferedReader r = new BufferedReader(reader);
-
-            ArrayList<String> array = null;
-            String key = null;
-            while (r.ready()) {
-                String line = r.readLine();
-
-                if (line == null)
-                    break;
-
-                if (line.startsWith("  ") && array != null) {
-                    array.add(line.trim());
-                } else {
-                    if (array != null) {
-                        if (array.size() > 0)
-                            map.put(key, array);
-                        array = null;
-                    }
-
-                    int index = line.indexOf(':');
-                    if (index == -1)
-                        continue;
-
-                    key = line.substring(0, index);
-                    String value = line.substring(index + 1).trim();
-                    if (value.isEmpty()) {
-                        array = new ArrayList<String>();
-                    } else {
-                        map.put(key, value);
-                    }
-                }
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(writer))) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                pw.println(entry.getKey() + "=" + entry.getValue());
             }
-
-            if (array != null)
-                map.put(key, array);
-        } catch (IOException e) {
-            logger.severe("Failed to load configuration: " + e.getMessage());
         }
     }
 
-    @Deprecated
-    /**
-     * use addProperty instead
-     */
-    public void add(String key, Object value) {
-        Object old = get(key);
-        addProperty(key, value == null ? null : value.toString());
-        changeSupport.firePropertyChange(key, old, value);
-    }
-
-    @Deprecated
-    /**
-     * use setProperty instead
-     */
-    public void put(String key, Object value) {
-        Object old = get(key);
-        if (value == null) {
-            remove(key);
-        }
-        else {
-            setProperty(key, value.toString());
-        }
-        changeSupport.firePropertyChange(key, old, value);
-    }
-
-    public void remove(String key) {
-        clearTree(key);
-    }
-
-    @Deprecated
-    /**
-     * use getProperty instead
-     */
     public Object get(String key) {
-        return getProperty(key);
+        return map.get(key);
+    }
+
+    public void put(String key, Object value) {
+        Object old = map.get(key);
+        if (value == null) {
+            map.remove(key);
+        } else {
+            map.put(key, value.toString());
+        }
+        changeSupport.firePropertyChange(key, old, value);
+    }
+
+    public String getString(String key, String def) {
+        Object val = map.get(key);
+        return val != null ? val.toString() : def;
+    }
+
+    public String getString(String key) {
+        return getString(key, null);
+    }
+
+    public int getInt(String key, int def) {
+        try {
+            Object val = map.get(key);
+            return val != null ? Integer.parseInt(val.toString()) : def;
+        } catch (NumberFormatException e) {
+            return def;
+        }
+    }
+
+    public float getFloat(String key, float def) {
+        try {
+            Object val = map.get(key);
+            return val != null ? Float.parseFloat(val.toString()) : def;
+        } catch (NumberFormatException e) {
+            return def;
+        }
+    }
+
+    public boolean getBoolean(String key, boolean def) {
+        Object val = map.get(key);
+        return val != null ? Boolean.parseBoolean(val.toString()) : def;
     }
 
     public void setInt(String key, int value) {
@@ -311,112 +123,42 @@ public class Configuration extends XMLConfiguration {
         put(key, value);
     }
 
-    public Color getColor(String key, Color def) {
-        try {
-            String s = getString(key).substring(1);
-            return new Color(Integer.parseInt(s, 16));
-        } catch (Exception e) {
-            setColor(key, def);
-            return def;
-        }
-    }
-
-    public void setColor(String key, Color value) {
-        if (value == null)
-            remove(key);
-        else {
-            String s = new Formatter().format(
-                    "#%06X", value.getRGB() & 0xFFFFFF).toString();
-            put(key, s);
-        }
-    }
-
-    public Rectangle getRectangle(String key, Rectangle def) {
-        try {
-            String value = getString(key);
-            String[] tokens = value.split(" ");
-            if (tokens.length != 4)
-                throw new NumberFormatException();
-
-            int[] values = new int[4];
-            for (int i = 0; i < tokens.length; i++) {
-                String s = tokens[i];
-                values[i] = Integer.parseInt(s);
-            }
-            return new Rectangle(values[0], values[1], values[2], values[3]);
-        } catch (Exception e) {
-            setRectangle(key, def);
-            return def;
-        }
-    }
-
-    public void setRectangle(String key, Rectangle value) {
-        if (value == null)
-            remove(key);
-        else {
-            String s = new Formatter().format("%d %d %d %d",
-                    (int) value.getX(),
-                    (int) value.getY(),
-                    (int) value.getWidth(),
-                    (int) value.getHeight()).toString();
-            put(key, s);
-        }
-    }
-
-    public Font getFont(String key, Font def) {
-        try {
-            String value = getString(key);
-            String[] tokens = value.split(", ");
-
-            return new Font(tokens[0],
-                    Integer.parseInt(tokens[1]),
-                    Integer.parseInt(tokens[2]));
-        } catch (Exception e) {
-            setFont(key, def);
-            return def;
-        }
-    }
-
-    public void setFont(String key, Font value) {
-        if (value == null)
-            remove(key);
-        else {
-            String s = new Formatter().format(
-                    "%s, %d, %d",
-                    value.getName(), value.getStyle(),
-                    value.getSize()).toString();
-            put(key, s);
-        }
-    }
-
     public void setBoolean(String key, boolean value) {
         put(key, value);
     }
 
     public void setList(String key, List<?> values) {
-        remove(key);
-        if (values == null) {
-            // TODO refactor when dev cycle finished (right now check implemented for debug in emergency case)
-            logger.severe("Illegal argument (empty list). Please check calling code.");
-        }
-        for (Object value : values) {
-            add(key, value);
+        map.remove(key);
+        if (values != null) {
+            for (int i = 0; i < values.size(); i++) {
+                map.put(key + "[" + i + "]", values.get(i) != null ? values.get(i).toString() : "");
+            }
         }
     }
 
-    @SuppressWarnings({"unchecked"})
+    public List<String> getList(String key) {
+        List<String> result = new ArrayList<>();
+        int i = 0;
+        while (map.containsKey(key + "[" + i + "]")) {
+            result.add(map.get(key + "[" + i + "]").toString());
+            i++;
+        }
+        return result;
+    }
+
     public <E extends Enum<E>> E getEnum(String key, E def) {
         String val = getString(key, def.name());
-        Class<E> clazz = (Class<E>) def.getClass();
-        return E.valueOf(clazz, val);
+        try {
+            @SuppressWarnings("unchecked")
+            Class<E> clazz = (Class<E>) def.getClass();
+            return Enum.valueOf(clazz, val);
+        } catch (IllegalArgumentException e) {
+            return def;
+        }
     }
 
     public <E extends Enum<E>> void setEnum(String key, E value) {
         setString(key, value.name());
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
     }
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
@@ -425,13 +167,16 @@ public class Configuration extends XMLConfiguration {
 
     public void addPropertyChangeListener(String propertyName, boolean initialize, PropertyChangeListener listener) {
         addPropertyChangeListener(propertyName, listener);
-        if (initialize)
+        if (initialize) {
             listener.propertyChange(new PropertyChangeEvent(this, propertyName, null, get(propertyName)));
+        }
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
 }
-
-

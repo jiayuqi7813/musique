@@ -20,13 +20,11 @@ package com.tulskiy.musique.audio;
 import com.tulskiy.musique.playlist.Track;
 import com.tulskiy.musique.playlist.formatting.Parser;
 import com.tulskiy.musique.playlist.formatting.tokens.Expression;
-import com.tulskiy.musique.system.Application;
 import com.tulskiy.musique.system.Codecs;
 import com.tulskiy.musique.system.TrackIO;
 import com.tulskiy.musique.system.configuration.Configuration;
 import com.tulskiy.musique.util.AudioMath;
 
-import javax.swing.*;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class Converter {
     private Logger logger = Logger.getLogger(getClass().getName());
-    private Configuration config = Application.getInstance().getConfiguration();
+    private Configuration config;
     private Expression fileNameFormat;
     private Encoder encoder;
     private Decoder decoder;
@@ -53,9 +51,15 @@ public class Converter {
     private double estimated;
     private File output;
 
-    public Converter() {
+    public Converter(Configuration config) {
+        this.config = config;
         String fileName = config.getString("converter.fileNameFormat", "%fileName%");
         fileNameFormat = Parser.parse(fileName);
+    }
+
+    /** Create a Converter with default (empty) configuration. */
+    public Converter() {
+        this(new Configuration());
     }
 
     public void convert(List<Track> tracks) {
@@ -209,23 +213,8 @@ public class Converter {
         output = new File(parent, fileName);
 
         if (output.exists()) {
-            String action = config.getString("converter.actionWhenExists", "Ask");
-            if (action.equals("Ask")) {
-                int ret = JOptionPane.showConfirmDialog(null,
-                        "File " + output.getAbsolutePath() + " exists, overwrite?",
-                        "File exists, overwrite",
-                        JOptionPane.YES_NO_CANCEL_OPTION);
-
-                if (ret == JOptionPane.YES_OPTION) {
-                    //noinspection ResultOfMethodCallIgnored
-                    output.delete();
-                } else if (ret == JOptionPane.NO_OPTION) {
-                    return false;
-                } else if (ret == JOptionPane.CANCEL_OPTION) {
-                    stop();
-                    return false;
-                }
-            } else if (action.equals("Overwrite")) {
+            String action = config.getString("converter.actionWhenExists", "Overwrite");
+            if (action.equals("Overwrite")) {
                 //noinspection ResultOfMethodCallIgnored
                 output.delete();
             } else if (action.equals("Skip")) {

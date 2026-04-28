@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 
 import org.jaudiotagger.tag.FieldKey;
 
-import com.tulskiy.musique.gui.model.FieldValues;
 import com.tulskiy.musique.util.Util;
 
 /**

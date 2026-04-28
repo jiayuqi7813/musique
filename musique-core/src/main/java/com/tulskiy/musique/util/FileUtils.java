@@ -17,7 +17,6 @@
 
 package com.tulskiy.musique.util;
 
-import javax.swing.*;
 import java.io.File;
 
 /**
@@ -29,23 +28,25 @@ public class FileUtils {
         // prevent instantiation
     }
 
+    /**
+     * Deletes empty parent folders of the given file.
+     * When {@code isConfirmationRequired} is {@code true} the caller is
+     * expected to have already obtained user consent; this method always
+     * proceeds with deletion.
+     */
     public static void deleteEmptyParentFolders(final File file, final boolean isConfirmationRequired) {
         File current = file.getParentFile();
         File parent;
         File[] files = current.listFiles();
         if (files != null && files.length == 0) {
-            int ret = JOptionPane.showConfirmDialog(null, "Do you want delete empty folder(s) as well?", "Delete File(s)?", JOptionPane.YES_NO_OPTION);
-            if (ret == JOptionPane.YES_OPTION) {
-                while (current != null) {
-                    parent = current.getParentFile();
-                    current.delete();
-                    files = parent.listFiles();
-                    if (files != null && files.length == 0) {
-                        current = parent;
-                    }
-                    else {
-                        current = null;
-                    }
+            while (current != null) {
+                parent = current.getParentFile();
+                current.delete();
+                files = parent.listFiles();
+                if (files != null && files.length == 0) {
+                    current = parent;
+                } else {
+                    current = null;
                 }
             }
         }

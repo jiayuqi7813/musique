@@ -17,82 +17,61 @@
 
 package com.tulskiy.musique.playlist;
 
-import com.tulskiy.musique.gui.playlist.PlaylistTable;
-import com.tulskiy.musique.images.Images;
 import com.tulskiy.musique.playlist.formatting.Parser;
-import com.tulskiy.musique.system.Application;
-import com.tulskiy.musique.system.configuration.Configuration;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.List;
 
 /**
+ * Utility class for sorting tracks in a playlist.
+ *
  * Author: Denis Tulskiy
  * Date: 6/3/11
  */
 public class Sorter {
-    private Application app = Application.getInstance();
-    private Configuration config = app.getConfiguration();
 
-    public JMenu createMenu(Playlist playlist, final List<Track> tracks) {
-        JMenu sort = new JMenu("Sort");
-        String[] sortItems = {
-                "Sort by...", "Randomize", "Reverse",
-                "Sort by Artist", "Sort by Album",
-                "Sort by File Path", "Sort by Title",
-                "Sort by Track Number", "Sort by Album Artist/Year/Album/Disc/Track/File Name"
-        };
+    /** Sort tracks by a format expression string (e.g. "%artist%"). */
+    public void sortBy(List<Track> tracks, String formatExpression) {
+        Collections.sort(tracks, new TrackComparator(Parser.parse(formatExpression)));
+    }
 
-        final String[] sortValues = {
-                null, null, null, "%artist%", "%album%",
-                "%file%", "%title%", "%trackNumber%",
-                "%albumArtist% - %year% - %album% - %discNumber% - %trackNumber% - %fileName%"
-        };
+    /** Randomize the order of tracks. */
+    public void randomize(List<Track> tracks) {
+        Collections.shuffle(tracks);
+    }
 
-        ActionListener sortListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JMenuItem src = (JMenuItem) e.getSource();
-                Integer index = (Integer) src.getClientProperty("index");
+    /** Reverse the order of tracks. */
+    public void reverse(List<Track> tracks) {
+        Collections.reverse(tracks);
+    }
 
-                switch (index) {
-                    case 0:
-                        String ret = JOptionPane.showInputDialog(null,
-                                "Sort By...",
-                                config.getString("playlist.sortString", ""));
-                        if (ret != null) {
-                            Collections.sort(tracks, new TrackComparator(Parser.parse(ret)));
-                            config.setString("playlist.sortString", ret);
-                        }
+    /** Sort tracks by artist. */
+    public void sortByArtist(List<Track> tracks) {
+        sortBy(tracks, "%artist%");
+    }
 
-                        break;
-                    case 1:
-                        Collections.shuffle(tracks);
-                        break;
-                    case 2:
-                        Collections.reverse(tracks);
-                        break;
-                    default:
-                        Collections.sort(tracks, new TrackComparator(Parser.parse(sortValues[index])));
-                }
-            }
-        };
+    /** Sort tracks by album. */
+    public void sortByAlbum(List<Track> tracks) {
+        sortBy(tracks, "%album%");
+    }
 
-        for (int i = 0; i < sortItems.length; i++) {
-            String sortValue = sortItems[i];
-            if (sortValue == null) {
-                sort.addSeparator();
-                continue;
-            }
+    /** Sort tracks by file path. */
+    public void sortByFilePath(List<Track> tracks) {
+        sortBy(tracks, "%file%");
+    }
 
-            AbstractButton item = sort.add(sortValue);
-            item.setIcon(Images.getEmptyIcon());
-            item.addActionListener(sortListener);
-            item.putClientProperty("index", i);
-        }
-        return sort;
+    /** Sort tracks by title. */
+    public void sortByTitle(List<Track> tracks) {
+        sortBy(tracks, "%title%");
+    }
+
+    /** Sort tracks by track number. */
+    public void sortByTrackNumber(List<Track> tracks) {
+        sortBy(tracks, "%trackNumber%");
+    }
+
+    /** Sort tracks by album artist / year / album / disc / track / filename. */
+    public void sortByAlbumArtistYearAlbum(List<Track> tracks) {
+        sortBy(tracks, "%albumArtist% - %year% - %album% - %discNumber% - %trackNumber% - %fileName%");
     }
 }

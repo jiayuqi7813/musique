@@ -17,18 +17,11 @@
 
 package com.tulskiy.musique.util;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.AbstractButton;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.UIManager;
-
-import com.tulskiy.musique.gui.model.FieldValues;
+import com.tulskiy.musique.playlist.FieldValues;
 
 /**
  * @Author: Denis Tulskiy
@@ -62,9 +55,6 @@ public class Util {
         if (hrs > 0) builder.append(hrs).append(":");
         if (hrs > 0 && min < 10) builder.append("0");
         builder.append(min).append(":");
-//        int n = precision + ((precision == 0) ? 2 : 3);
-//        String fmt = "%0" + n + "." + precision + "f";
-//        builder.append(new Formatter().format(Locale.US, fmt, seconds));
         int sec = (int) seconds;
         if (sec < 10) builder.append("0");
         builder.append(Math.round(sec));
@@ -144,39 +134,6 @@ public class Util {
         return sb.toString();
     }
 
-    public static Color getContrastColor(Color bg) {
-        int threshold = 105;
-        int delta = (int) (bg.getRed() * 0.299 + bg.getGreen() * 0.587 + bg.getBlue() * 0.114);
-        return (255 - delta < threshold) ? Color.black : Color.white;
-    }
-
-    public static void fixIconTextGap(JComponent menu) {
-        if (isNimbusLaF()) {
-            Component[] components = menu.getComponents();
-            for (Component component : components) {
-                if (component instanceof AbstractButton) {
-                    AbstractButton b = (AbstractButton) component;
-                    b.setIconTextGap(0);
-                }
-
-                if (component instanceof JMenu)
-                    fixIconTextGap(((JMenu) component).getPopupMenu());
-            }
-        }
-    }
-
-    public static boolean isNimbusLaF() {
-        return UIManager.getLookAndFeel().getName().contains("Nimbus");
-    }
-
-    public static boolean isWindowsLaF() {
-        return UIManager.getLookAndFeel().getName().contains("Windows");
-    }
-
-    public static boolean isGTKLaF() {
-        return UIManager.getLookAndFeel().getName().contains("GTK");
-    }
-
     public static String center(String str, int maxSize, int size) {
         if (str == null || size <= 0 || str.length() >= maxSize) {
             return str;
@@ -200,21 +157,21 @@ public class Util {
     }
 
     public static String formatFieldValues(Object values) {
-		String result = null;
+String result = null;
 
-		if (values != null) {
-        	if (values instanceof String) {
-        		result = (String) values;
-        	}
-        	else if (values instanceof FieldValues) {
-        		FieldValues vs = (FieldValues) values;
-        		if (vs.size() > 1) {
-        			result = "<multiple values> " + vs.toString();
-        		}
-        		else {
-        			result = vs.toString();
-        		}
-        	}
+if (values != null) {
+        if (values instanceof String) {
+        result = (String) values;
+        }
+        else if (values instanceof FieldValues) {
+        FieldValues vs = (FieldValues) values;
+        if (vs.size() > 1) {
+        result = "<multiple values> " + vs.toString();
+        }
+        else {
+        result = vs.toString();
+        }
+        }
         }
         
         return result;
@@ -222,45 +179,45 @@ public class Util {
 
     public static String formatFieldValues(Object values, String separator) {
         if (values != null && separator != null) {
-        	if (values instanceof String) {
-        		return (String) values;
-        	}
-        	else if (values instanceof FieldValues) {
-            	StringBuilder sb = new StringBuilder();
-            	FieldValues vs = (FieldValues) values;
-            	for (int i = 0; i < vs.size(); i++) {
-            		String value = vs.get(i);
-            		if (sb.length() != 0) {
-            			sb.append(separator);
-            		}
-            		sb.append(value == null ? "" : value.toString());
-            	}
-            	return sb.toString();
-        	}
-        	else if (values instanceof Object[]) {
-            	StringBuilder sb = new StringBuilder();
-            	Object[] vs = (Object[]) values;
-            	for (int i = 0; i < vs.length; i++) {
-            		String value = vs[i].toString();
-            		if (sb.length() != 0) {
-            			sb.append(separator);
-            		}
-            		sb.append(value == null ? "" : value.toString());
-            	}
-            	return sb.toString();
-        	}
-        	else if (values instanceof List) {
-            	StringBuilder sb = new StringBuilder();
-            	List<Object> vs = (List<Object>) values;
-            	for (Object obj : vs) {
-            		String value = obj.toString();
-            		if (sb.length() != 0) {
-            			sb.append(separator);
-            		}
-            		sb.append(value == null ? "" : value.toString());
-            	}
-            	return sb.toString();
-        	}
+        if (values instanceof String) {
+        return (String) values;
+        }
+        else if (values instanceof FieldValues) {
+            StringBuilder sb = new StringBuilder();
+            FieldValues vs = (FieldValues) values;
+            for (int i = 0; i < vs.size(); i++) {
+            String value = vs.get(i);
+            if (sb.length() != 0) {
+            sb.append(separator);
+            }
+            sb.append(value == null ? "" : value.toString());
+            }
+            return sb.toString();
+        }
+        else if (values instanceof Object[]) {
+            StringBuilder sb = new StringBuilder();
+            Object[] vs = (Object[]) values;
+            for (int i = 0; i < vs.length; i++) {
+            String value = vs[i].toString();
+            if (sb.length() != 0) {
+            sb.append(separator);
+            }
+            sb.append(value == null ? "" : value.toString());
+            }
+            return sb.toString();
+        }
+        else if (values instanceof List) {
+            StringBuilder sb = new StringBuilder();
+            List<Object> vs = (List<Object>) values;
+            for (Object obj : vs) {
+            String value = obj.toString();
+            if (sb.length() != 0) {
+            sb.append(separator);
+            }
+            sb.append(value == null ? "" : value.toString());
+            }
+            return sb.toString();
+        }
         }
         
         return null;

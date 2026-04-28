@@ -19,7 +19,6 @@ package com.tulskiy.musique.playlist;
 
 import com.tulskiy.musique.playlist.formatting.Parser;
 import com.tulskiy.musique.playlist.formatting.tokens.Expression;
-import com.tulskiy.musique.system.Application;
 import com.tulskiy.musique.system.configuration.Configuration;
 
 import java.beans.PropertyChangeEvent;
@@ -83,7 +82,10 @@ public class PlaybackOrder {
     private Expression albumFormat;
 
     public PlaybackOrder() {
-        final Configuration config = Application.getInstance().getConfiguration();
+        albumFormat = Parser.parse("%album%");
+    }
+
+    public PlaybackOrder(Configuration config) {
         config.addPropertyChangeListener("playbackOrder.albumFormat", true, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {

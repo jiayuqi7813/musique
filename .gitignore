@@ -10,3 +10,11 @@
 musique-core/main/java/src/com/tulskiy/musique/Test.java
 target
 
+
+# Gradle
+.gradle/
+build/
+*/build/
+gradlew
+gradlew.bat
+gradle/wrapper/gradle-wrapper.jar
