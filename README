@@ -1,170 +1,38 @@
-musique is a 100% Java audio player that supports most popular formats
+# Musique Core (Java 25 + Gradle Kotlin DSL)
 
-    * MP3
-    * OGG Vorbis
-    * FLAC
-    * WavPack
-    * Monkey's Audio
-    * WAV, AU, AIFF
+这是一个面向**音频核心能力与播放器 API** 的精简版本，不包含 GUI。
 
-Also, musique can recode these formats into:
+## 技术栈
 
-    * OGG Vorbis
-    * Monkey's Audio
-    * WavPack
-    * WAV
+- Java 25 (Toolchain)
+- Kotlin JVM
+- Gradle (Kotlin DSL)
+- Java Sound（提供 WAV/AIFF/AU 等系统支持格式播放）
 
-There is a built in support for CUE files, gapless playback,
-SHOUTCast/IceCast radio, Last.fm Scrobbling
+## 快速开始
 
-Building
+```bash
+./gradlew test
+./gradlew run --args='path/to/file.wav'
+./gradlew run --args='https://example.com/audio.wav'
+```
 
-    To compile, run "ant", then run either musique.sh or musique.bat
-    to start the player
-    You also can open the project in IDE - there are configurations
-    for IntelliJ IDEA, NetBeans or Eclipse.
-    Main class is com.tulskiy.musque.system.Main
+## 核心 API
 
-    Requirements: Sun JDK 1.6, or OpenJDK 1.6
+- `AudioPlayer`：加载、播放、暂停、停止、关闭
+  - `load(path: Path)`：本地音频
+  - `load(uri: URI)`：网络音频资源（HTTP/HTTPS）
+- `PlayerState`：播放器状态
+- `JavaSoundAudioPlayer`：基于 Java Sound 的默认实现
 
+## 说明
 
-Shortcuts
-    Z, X, C, V, B - prev, play, pause, stop, next
-    Space - scroll to now playing
-    Q - add selected tracks to queue
-    Alt-Enter - tracks info / edit tags
-    Del - remove selected tracks from playlist
-    Ctrl T - new playlist
-    Ctrl S - save playlist
-    Ctrl F - Search
-    Ctrl P - properties
-    Ctrl W - closes window if tray is enabled, else quit program
-    Ctrl Q - quit program
+老项目中大量历史依赖（部分仓库/坐标已失效）会显著增加 Java 25 迁移成本。
+此版本优先保证：
 
-GUI Tweaks
+1. 可编译
+2. 可执行
+3. 提供稳定的无 GUI 音频核心组件和播放器 API
+4. 同时支持本地和网络资源输入
 
-    Tray Icons
-
-    On Gnome, tray icon is not transparent, so I have to draw background and gradient
-    myself to blend in. Here are some colors for standard Gnome/Ubuntu themes that will make the
-    tray icon seem transparent (written as Red, Green, Blue, can be set in
-    Properties->Color and Fonts):
-
-    Theme       | Background 1   | Background 2
-    ---------------------------------------------
-    Ambiance:     92, 91, 86     | 60, 59, 54
-    New Wave      58, 58, 58     | 42, 42, 42
-    Radiance      247, 244, 236  | 225, 215, 188
-    // other themes don't require gradient, so only one color
-    Clearlooks    237, 236, 235
-    Dust          52, 51, 48
-    Dust Sand     193, 189, 191
-    High contrast 0, 0, 51
-
-    GTK LaF:
-
-    On Ubuntu Maverick with GTK LaF and Ambiance theme, slider is too wide,
-    you can fix it by adding 'gui.thumbWidth: 15' to
-    $HOME/.musique/config
-    Tabs are too tall, this is JRE bug, it's been around for 5+ years, and is,
-    as many GUI bugs are, low priority
-
-    Double-click speed on Linux is faster than system settings, it might be
-    related to http://ubuntuforums.org/showthread.php?t=221642
-
-        create ~/.Xresources, and add
-        *multiClickTime: 400
-        Log Out and then Log back on
-
-        Substitute 400 with your prefered time (in milliseconds).
-
-    Mac OSX:
-
-        add -Xdock:name="Musique"
-        to musique.vmoptions to change program name in global menu
-
-
-Performance Notes
-
-    The program should be run in client mode, not server, otherwise memory and CPU
-    usage will be too high.
-
-    I've tested the program in Windows 7 on Core 2 Duo 2.13 GHz, JRE 1.6u20 32-bit
-    and average CPU load was less than 1. Memory consumption was around 30-40 Mb
-
-    When I run the program in Ubuntu 10.04 32-bit and OpenJDK 1.6, memory consumption
-    is also around 30-40Mb, but the CPU load is ~4%.
-    However, deadbeef and rhytmbox use same amount of CPU so I guess it's because of
-    PulseAudio.
-
-    If you are running a 64-bit system and 64-bit JDK, it can not be run in client mode,
-    so it is better to install a 32-bit JRE. Then just change path to jre in musique.sh
-
-Troubleshooting
-
-    On Linux, Sun JRE is using oss for sound output and the implementation is known to be
-    very buggy. Issues include conflicts with PulseAudio and Alsa - player throws LineUnavailableException
-    when some other program is playing audio, or, when the player is running, other programs can not
-    play sound.
-
-    So if you use PulseAudio, it is best to install OpenJDK, which has good
-    PulseAudio support (at least on Ubuntu). If you want to use Sun JDK instead of OpenJDK,
-    you can copy PulseAudio support from OpenJDK to Sun JDK using these instruction:
-
-    copy the following files from openjdk folder to java-sun folder
-    ./jre/lib/(i386, amd64)/libpulse-java.so
-    ./jre/ext/pulse-java.jar
-
-    Another solution is to use padsp or aoss to redirect sound to pulseaudio or alsa,
-    in this case, edit musique.sh. Find this line:
-
-    # uncomment to use OSS emulation, fixes sound problems with Sun JRE's
-    # DSP="padsp"
-
-    uncomment last line. Change it to aoss if you use alsa (you might need to install
-    the package first).
-
-Title formatting help:
-
-    Everything is pretty much winamp/foobar2000 style:
-    Currently the following tags are supported:
-
-    %artist%, %title%, %album%, %year%, %genre%, %comment%, %length% - Don't need to explain these
-    %genres% - multi-valued version of %genre%
-    %albumArtist% - Album Artist (returns %artist% if album artist is not set)
-                    for MP3 I use album artist from TXXX
-    %fileName% - filename without extension
-    %file% - full file path
-    %trackNumber%, %trackTotal% - track number formatted as a two-digit number and total tracks
-    %track% - convenience method that returns raw track number as it is stored in tags
-    %disc%, %discTotal% - disc number and total discs
-    %codec% - returns codec (MPEG-1 Layer 3, FLAC, WavPack, Ogg Vorbis, Monkey's Audio, PCM)
-    %recordLabels%, %catalogNos% - set of record label and catalog number values
-
-    some technical info fields like
-    %bitrate%, %totalSamples%, %bps%, %channels%, %songIndex%, %sampleRate%,
-    %channelsAsString% (Mono or Stereo)
-    $playingTime() - playing time of current song, if any
-
-    You can also use some functions, but not many of them are implemented yet:
-    $if1(arg1, arg2, arg3) - returns arg2 if arg1 is not empty, and arg3 otherwise
-    $if3(arg1, arg2, ...) - returns first non-empty argument
-    $strcmp(arg1, arg2) - returns 1 if arg1=arg2, empty string otherwise
-    $isPlaying() - used to idicate that the song is currently playing, paused or in playback queue
-    $combine(arg1, arg2) - formatter for multi-valued fields, where arg1 is values and arg2 is format separator
-    
-
-    '' - Regular strings are enclosed in single quotation marks
-    [arg1 arg2] - will return contents only if at least on of the args is not empty
-
-    Some sample usages:
-
-    $if1($strcmp('MPEG-1 Layer 3', %codec%),'this is mp3','hurray to free formats')
-        will compare field 'codec' with string 'mp3', and return 'this is mp3' if they are equal
-
-    [%artist% - ]%title% - returns 'Artist - Title' if artist field is not empty,
-        otherwise returns just 'Title'
-
-    $if3(%title%, %fileName%) - returns file name without extension if title is empty
-    
-    $combine(%genres%, ', ') - returns genre list separated by comma (for example, "heavy metal, hard rock")
+如果后续需要扩展 MP3/FLAC/AAC 等格式，可在此基础上继续增加解码模块。
