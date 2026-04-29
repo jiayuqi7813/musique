@@ -26,7 +26,7 @@ import java.util.Map.Entry;
 
 import org.jaudiotagger.tag.FieldKey;
 
-import com.tulskiy.musique.gui.model.FieldValues;
+import com.tulskiy.musique.model.FieldValues;
 import com.tulskiy.musique.util.Util;
 
 /**
@@ -491,7 +491,19 @@ public class TrackData implements Cloneable {
 
     public String getFileName() {
         if (fileName == null) {
-            fileName = Util.removeExt(getFile().getName());
+            if (isRemoteUri()) {
+                URI loc = getLocation();
+                String path = loc != null ? loc.getPath() : null;
+                if (path != null && !path.isEmpty()) {
+                    int slash = path.lastIndexOf('/');
+                    fileName = slash >= 0 ? path.substring(slash + 1) : path;
+                }
+                if (Util.isEmpty(fileName)) {
+                    fileName = loc != null ? loc.getHost() : "stream";
+                }
+            } else {
+                fileName = Util.removeExt(getFile().getName());
+            }
         }
         return fileName;
     }
@@ -596,15 +608,31 @@ public class TrackData implements Cloneable {
     }
 
     public File getFile() {
+        if (isRemoteUri()) {
+            throw new UnsupportedOperationException("Remote URI has no local file: " + locationString);
+        }
         return new File(getLocation());
     }
 
+    /** True for http(s) resources (file-like URL or live stream). */
+    public boolean isRemoteUri() {
+        if (getLocation() == null) {
+            return false;
+        }
+        String scheme = getLocation().getScheme();
+        return scheme != null && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"));
+    }
+
     public boolean isFile() {
-        return getLocation() != null && !isStream();
+        return getLocation() != null && !isStream() && !isRemoteUri();
     }
 
     public boolean isStream() {
-        return getLocation() != null && "http".equals(getLocation().getScheme());
+        if (getLocation() == null) {
+            return false;
+        }
+        String scheme = getLocation().getScheme();
+        return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
     }
 
     public String getCodec() {
@@ -625,7 +653,12 @@ public class TrackData implements Cloneable {
 
     public String getDirectory() {
         if (directory == null) {
-            directory = getFile().getParentFile().getName();
+            if (isRemoteUri()) {
+                URI loc = getLocation();
+                directory = loc != null && loc.getHost() != null ? loc.getHost() : "";
+            } else {
+                directory = getFile().getParentFile().getName();
+            }
         }
         return directory;
     }

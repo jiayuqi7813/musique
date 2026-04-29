@@ -96,8 +96,11 @@ public class IcyInputStream extends FilterInputStream {
 
     private void init() {
         contentType = connection.getContentType();
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
         String metaIntString = "0";
-        if (contentType.equals("unknown/unknown")) {
+        if ("unknown/unknown".equals(contentType)) {
             //Java does not parse non-standart headers
             //used by SHOUTCast
             logger.fine("Reading SHOUTCast response");

@@ -34,6 +34,7 @@ import com.tulskiy.musique.audio.formats.uncompressed.PCMDecoder;
 import com.tulskiy.musique.audio.formats.uncompressed.PCMEncoder;
 import com.tulskiy.musique.audio.formats.wavpack.WavPackDecoder;
 import com.tulskiy.musique.audio.formats.wavpack.WavPackEncoder;
+import com.tulskiy.musique.net.NetworkMedia;
 import com.tulskiy.musique.playlist.Track;
 import com.tulskiy.musique.util.Util;
 
@@ -82,7 +83,15 @@ public class Codecs {
         }
         if (track.getTrackData().isStream()) {
             IcyInputStream inputStream = IcyInputStream.create(track);
-            String contentType = inputStream.getContentType().trim();
+            if (inputStream == null) {
+                return null;
+            }
+            String contentType = inputStream.getContentType();
+            if (contentType == null) {
+                contentType = "";
+            } else {
+                contentType = contentType.trim();
+            }
             try {
                 inputStream.close();
             } catch (IOException e) {
@@ -93,14 +102,42 @@ public class Codecs {
                 return decoders.get("mp3");
             }
 
-            if ("application/ogg".equals(contentType)) {
+            if ("application/ogg".equals(contentType) || "audio/ogg".equals(contentType)) {
                 return decoders.get("ogg");
             }
 
-            if ("audio/aac".equals(contentType)) {
+            if ("audio/aac".equals(contentType) || "audio/x-aac".equals(contentType)) {
                 return decoders.get("aac");
             }
-            logger.warning("Unsupported ContentType: " + contentType);
+
+            String pathExt = Util.getUriPathExtension(location);
+            if (!pathExt.isEmpty()) {
+                Decoder byExt = decoders.get(pathExt);
+                if (byExt != null) {
+                    return byExt;
+                }
+            }
+
+            String probed = NetworkMedia.probeContentType(location);
+            if (probed != null) {
+                if ("audio/mpeg".equals(probed)) {
+                    return decoders.get("mp3");
+                }
+                if ("application/ogg".equals(probed) || "audio/ogg".equals(probed)) {
+                    return decoders.get("ogg");
+                }
+                if ("audio/aac".equals(probed) || "audio/x-aac".equals(probed)) {
+                    return decoders.get("aac");
+                }
+                if ("audio/flac".equals(probed) || "audio/x-flac".equals(probed)) {
+                    return decoders.get("flac");
+                }
+                if ("audio/mp4".equals(probed) || "audio/x-m4a".equals(probed)) {
+                    return decoders.get("m4a");
+                }
+            }
+
+            logger.warning("Unsupported stream Content-Type: " + contentType + " (HEAD: " + probed + ")");
             return null;
         }
         String ext = Util.getFileExt(location.toString()).toLowerCase();
@@ -109,10 +146,8 @@ public class Codecs {
 
     public static Decoder getNewDecoder(Track track) {
         try {
-            return getDecoder(track).getClass().newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+            return getDecoder(track).getClass().getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
             e.printStackTrace();
         }
 

@@ -20,7 +20,7 @@ package com.tulskiy.musique.audio.formats.mp3;
 import java.io.IOException;
 import java.util.List;
 
-import com.tulskiy.musique.gui.model.FieldValues;
+import com.tulskiy.musique.model.FieldValues;
 import com.tulskiy.musique.util.Util;
 import org.jaudiotagger.audio.mp3.LameFrame;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;

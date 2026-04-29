@@ -18,7 +18,7 @@
 package com.tulskiy.musique.audio.formats.ape;
 
 import com.tulskiy.musique.audio.Encoder;
-import com.tulskiy.musique.system.configuration.Configuration;
+import com.tulskiy.musique.audio.EncoderOptions;
 
 import davaguine.jmac.encoder.IAPECompress;
 import davaguine.jmac.info.CompressionLevel;
@@ -41,7 +41,7 @@ public class APEEncoder implements Encoder {
     private byte[] tempBuf;
 
     @Override
-    public boolean open(File outputFile, AudioFormat fmt, Configuration options) {
+    public boolean open(File outputFile, AudioFormat fmt, EncoderOptions options) {
         try {
             outputFile.delete();
             buffer = ByteBuffer.allocate((int) Math.pow(2, 18));
