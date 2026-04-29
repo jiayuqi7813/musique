@@ -41,7 +41,7 @@ import com.tulskiy.musique.audio.AudioFileReader;
 import com.tulskiy.musique.audio.AudioTagWriter;
 import com.tulskiy.musique.audio.TagWriteException;
 import com.tulskiy.musique.audio.formats.ape.APETagProcessor;
-import com.tulskiy.musique.gui.model.FieldValues;
+import com.tulskiy.musique.model.FieldValues;
 import com.tulskiy.musique.playlist.Track;
 import com.tulskiy.musique.playlist.TrackData;
 import com.tulskiy.musique.util.Util;

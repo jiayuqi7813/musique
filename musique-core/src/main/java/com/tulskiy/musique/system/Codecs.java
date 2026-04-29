@@ -109,10 +109,8 @@ public class Codecs {
 
     public static Decoder getNewDecoder(Track track) {
         try {
-            return getDecoder(track).getClass().newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+            return getDecoder(track).getClass().getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
             e.printStackTrace();
         }
 

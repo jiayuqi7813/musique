@@ -18,7 +18,7 @@
 package com.tulskiy.musique.audio.formats.ogg;
 
 import com.tulskiy.musique.audio.Encoder;
-import com.tulskiy.musique.system.configuration.Configuration;
+import com.tulskiy.musique.audio.EncoderOptions;
 
 import org.xiph.libogg.ogg_packet;
 import org.xiph.libogg.ogg_page;
@@ -49,7 +49,7 @@ public class VorbisEncoder implements Encoder {
     private static final float DEFAULT_BITRATE = 0.3f;
 
     @Override
-    public boolean open(File outputFile, AudioFormat fmt, Configuration options) {
+    public boolean open(File outputFile, AudioFormat fmt, EncoderOptions options) {
         vorbis_info vi = new vorbis_info();
         vorbisenc encoder = new vorbisenc();
 

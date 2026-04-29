@@ -18,7 +18,7 @@
 package com.tulskiy.musique.audio.formats.wavpack;
 
 import com.tulskiy.musique.audio.Encoder;
-import com.tulskiy.musique.system.configuration.Configuration;
+import com.tulskiy.musique.audio.EncoderOptions;
 import com.tulskiy.musique.util.Util;
 import com.wavpack.encoder.Defines;
 import com.wavpack.encoder.WavPackUtils;
@@ -42,7 +42,7 @@ public class WavPackEncoder implements Encoder {
     private int totalSamples;
 
     @Override
-    public boolean open(File outputFile, AudioFormat fmt, Configuration options) {
+    public boolean open(File outputFile, AudioFormat fmt, EncoderOptions options) {
         wpc = new WavpackContext();
         WavpackConfig config = wpc.config;
         try {

@@ -17,8 +17,6 @@
 
 package com.tulskiy.musique.audio;
 
-import com.tulskiy.musique.system.configuration.Configuration;
-
 import javax.sound.sampled.AudioFormat;
 import java.io.File;
 import java.util.logging.Logger;
@@ -30,7 +28,7 @@ import java.util.logging.Logger;
 public interface Encoder {
     final Logger logger = Logger.getLogger(Encoder.class.getName());
 
-    public boolean open(File outputFile, AudioFormat fmt, Configuration options);
+    public boolean open(File outputFile, AudioFormat fmt, EncoderOptions options);
 
     public void encode(byte[] buf, int len);
 

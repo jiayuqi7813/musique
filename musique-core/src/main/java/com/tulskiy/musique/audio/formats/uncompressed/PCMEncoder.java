@@ -18,7 +18,7 @@
 package com.tulskiy.musique.audio.formats.uncompressed;
 
 import com.tulskiy.musique.audio.Encoder;
-import com.tulskiy.musique.system.configuration.Configuration;
+import com.tulskiy.musique.audio.EncoderOptions;
 
 import javax.sound.sampled.AudioFormat;
 import java.io.File;
@@ -37,7 +37,7 @@ public class PCMEncoder implements Encoder {
     private AudioFormat fmt;
 
     @Override
-    public boolean open(File outputFile, AudioFormat fmt, Configuration options) {
+    public boolean open(File outputFile, AudioFormat fmt, EncoderOptions options) {
         this.fmt = fmt;
         try {
             output = new RandomAccessFile(outputFile, "rw");

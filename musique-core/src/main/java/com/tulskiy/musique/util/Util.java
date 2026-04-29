@@ -17,18 +17,11 @@
 
 package com.tulskiy.musique.util;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.AbstractButton;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.UIManager;
-
-import com.tulskiy.musique.gui.model.FieldValues;
+import com.tulskiy.musique.model.FieldValues;
 
 /**
  * @Author: Denis Tulskiy
@@ -142,39 +135,6 @@ public class Util {
         sb.deleteCharAt(sb.length() - 1);
 
         return sb.toString();
-    }
-
-    public static Color getContrastColor(Color bg) {
-        int threshold = 105;
-        int delta = (int) (bg.getRed() * 0.299 + bg.getGreen() * 0.587 + bg.getBlue() * 0.114);
-        return (255 - delta < threshold) ? Color.black : Color.white;
-    }
-
-    public static void fixIconTextGap(JComponent menu) {
-        if (isNimbusLaF()) {
-            Component[] components = menu.getComponents();
-            for (Component component : components) {
-                if (component instanceof AbstractButton) {
-                    AbstractButton b = (AbstractButton) component;
-                    b.setIconTextGap(0);
-                }
-
-                if (component instanceof JMenu)
-                    fixIconTextGap(((JMenu) component).getPopupMenu());
-            }
-        }
-    }
-
-    public static boolean isNimbusLaF() {
-        return UIManager.getLookAndFeel().getName().contains("Nimbus");
-    }
-
-    public static boolean isWindowsLaF() {
-        return UIManager.getLookAndFeel().getName().contains("Windows");
-    }
-
-    public static boolean isGTKLaF() {
-        return UIManager.getLookAndFeel().getName().contains("GTK");
     }
 
     public static String center(String str, int maxSize, int size) {
