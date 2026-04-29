@@ -202,16 +202,13 @@ public class Configuration extends XMLConfiguration {
         logger.fine("Saving configuration");
         
         try {
-            OutputFormat format = new OutputFormat(createDocument());
+            OutputFormat format = new OutputFormat();
             format.setLineWidth(65);
             format.setIndenting(true);
             format.setIndent(2);
             XMLSerializer serializer = new XMLSerializer(writer, format);
             serializer.serialize(getDocument());
             writer.close();
-        }
-        catch (ConfigurationException ce) {
-            logger.severe("Failed to save configuration: " + ce.getMessage());
         }
         catch (IOException ioe) {
             logger.severe("Failed to save configuration: " + ioe.getMessage());
