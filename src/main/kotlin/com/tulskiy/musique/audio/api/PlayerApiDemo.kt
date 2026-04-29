@@ -6,11 +6,19 @@ package com.tulskiy.musique.audio.api
  */
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
-        println("musique-audio: pass a path to an audio file to decode and play briefly (requires audio output).")
+        println(
+            "musique-audio: pass a local path or http(s) URL to play briefly (requires audio output). " +
+                "Example: ./gradlew run --args=\"https://example.com/track.mp3\""
+        )
         return
     }
     val api = PlayerApi()
-    val track = api.addFile(args[0])
+    val arg = args[0].trim()
+    val track = if (arg.startsWith("http://", ignoreCase = true) || arg.startsWith("https://", ignoreCase = true)) {
+        api.addHttpUrl(arg)
+    } else {
+        api.addFile(arg)
+    }
     api.open(track)
     api.play()
     Thread.sleep(1500)

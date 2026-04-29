@@ -30,6 +30,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.logging.Level;
 
 /**
@@ -53,7 +54,13 @@ public class AACDecoder implements com.tulskiy.musique.audio.Decoder {
         try {
             TrackData trackData = track.getTrackData();
             if (trackData.isStream()) {
-                in = new BufferedInputStream(IcyInputStream.create(track), BUFFER_SIZE);
+                IcyInputStream icy = IcyInputStream.create(track);
+                if (icy != null) {
+                    in = new BufferedInputStream(icy, BUFFER_SIZE);
+                } else {
+                    in = new BufferedInputStream(
+                            new URL(trackData.getLocation().toString()).openStream(), BUFFER_SIZE);
+                }
                 trackData.setCodec("AAC Stream");
             } else
                 in = new BufferedInputStream(new FileInputStream(trackData.getFile()), BUFFER_SIZE);

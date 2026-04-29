@@ -18,6 +18,7 @@
 package com.tulskiy.musique.util;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -85,6 +86,22 @@ public class Util {
         int pos = fileName.lastIndexOf(".");
         if (pos == -1) return "";
         return fileName.substring(pos + 1).toLowerCase();
+    }
+
+    /**
+     * File extension from the URI path only (ignores query string), for http(s) URLs.
+     */
+    public static String getUriPathExtension(URI uri) {
+        if (uri == null) {
+            return "";
+        }
+        String path = uri.getPath();
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+        int slash = path.lastIndexOf('/');
+        String name = slash >= 0 ? path.substring(slash + 1) : path;
+        return getFileExt(name);
     }
 
     public static String longest(String... args) {

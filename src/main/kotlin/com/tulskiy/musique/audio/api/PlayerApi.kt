@@ -29,6 +29,18 @@ class PlayerApi {
         return track
     }
 
+    /**
+     * Adds a track from an http(s) URL (progressive file or ICY stream).
+     * Scheme must be `http` or `https`.
+     */
+    fun addHttpUrl(url: String): Track {
+        val uri = URI.create(url.trim())
+        require(uri.scheme.equals("http", ignoreCase = true) || uri.scheme.equals("https", ignoreCase = true)) {
+            "Only http and https URLs are supported: $url"
+        }
+        return addUri(uri)
+    }
+
     fun addUri(uri: URI): Track {
         val track = Track(TrackData(uri, 0))
         playlist.add(track)

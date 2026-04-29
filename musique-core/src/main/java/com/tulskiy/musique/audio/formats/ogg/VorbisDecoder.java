@@ -55,12 +55,20 @@ public class VorbisDecoder implements Decoder {
                 vorbisFile = new VorbisFile(trackData.getFile().getAbsolutePath());
                 streaming = false;
                 oldBitrate = trackData.getBitrate();
-            } else if (trackData.isStream()) {
+            } else if (trackData.isStream() || trackData.isRemoteUri()) {
                 URL url = trackData.getLocation().toURL();
                 logger.fine("Opening stream: " + URLDecoder.decode(url.toString(), "utf8"));
                 URLConnection urlConnection = url.openConnection();
                 String contentType = urlConnection.getContentType();
-                if (!contentType.equals("application/ogg")) {
+                if (contentType == null) {
+                    contentType = "";
+                } else {
+                    int semi = contentType.indexOf(';');
+                    if (semi > 0) {
+                        contentType = contentType.substring(0, semi).trim();
+                    }
+                }
+                if (!contentType.equals("application/ogg") && !contentType.equals("audio/ogg")) {
                     logger.warning("Wrong content type: " + contentType);
                     return false;
                 }
@@ -69,7 +77,7 @@ public class VorbisDecoder implements Decoder {
                 vorbisFile = new VorbisFile(bis, null, 0);
                 streaming = true;
                 reloadComments(track);
-                trackData.setCodec("OGG Vorbis Stream");
+                trackData.setCodec(trackData.isStream() ? "OGG Vorbis Stream" : "OGG Vorbis");
             }
             Info info = vorbisFile.getInfo()[0];
             trackData.setSampleRate(info.rate);

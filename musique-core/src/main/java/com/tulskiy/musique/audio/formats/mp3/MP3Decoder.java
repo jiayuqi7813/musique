@@ -26,6 +26,7 @@ import javazoom.jl.decoder.*;
 import javax.sound.sampled.AudioFormat;
 import java.io.*;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -74,6 +75,9 @@ public class MP3Decoder implements com.tulskiy.musique.audio.Decoder {
 
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
     private boolean createBitstream(long targetSample) {
+        if (streaming) {
+            return bitstream != null;
+        }
         if (bitstream != null)
             bitstream.close();
         bitstream = null;
@@ -148,10 +152,13 @@ public class MP3Decoder implements com.tulskiy.musique.audio.Decoder {
                 fis = new FileInputStream(trackData.getFile());
                 streamSize = trackData.getFile().length();
             } else {
-            	trackData.setCodec("MP3 Stream");
+                trackData.setCodec("MP3 Stream");
                 logger.fine("Opening stream: " + URLDecoder.decode(location.toString(), "utf8"));
                 streaming = true;
                 fis = IcyInputStream.create(track);
+                if (fis == null) {
+                    fis = new BufferedInputStream(new URL(location.toString()).openStream());
+                }
                 decoder = new Decoder();
             }
             bitstream = new Bitstream(fis);

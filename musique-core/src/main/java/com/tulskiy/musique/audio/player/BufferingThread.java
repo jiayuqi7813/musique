@@ -182,7 +182,7 @@ public class BufferingThread extends Actor implements Runnable {
                 //try to get the next one
                 track = order.next(track);
                 if (track == null || (
-                		trackData.isFile() && !trackData.getFile().exists())) {
+                		track.getTrackData().isFile() && !track.getTrackData().getFile().exists())) {
                     stop(false);
                     return;
                 }
